@@ -1,4 +1,4 @@
-#include "bmp.h"
+#include "bmp.hpp"
 bmp_loader::bmp_loader(char* path){
   this->file_path=path;
   allocated = false;

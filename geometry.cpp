@@ -1,5 +1,5 @@
-#include "geometry.h"
-#include "bmp.h"
+#include "geometry.hpp"
+#include "bmp.hpp"
 face::face(){ return;}
 face::~face(){
     //free everythin'
@@ -81,7 +81,7 @@ void body::load_texture(char* dir){
 		    GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,
 		    GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);    
+    /*glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);*/    
     tex_path=dir_path+this->tex_name;
     cout<<"loading texture: "<<tex_path<<endl;
     bmp = new bmp_loader((char*)tex_path.c_str());
@@ -90,8 +90,8 @@ void body::load_texture(char* dir){
       this->TEXTURE_PRESENT = false;
     }
     else{
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, bmp->width, bmp->height, 0, 
-      	   GL_BGR, GL_UNSIGNED_BYTE, bmp->image);
+      gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGB, bmp->width, bmp->height,
+			GL_BGR, GL_UNSIGNED_BYTE, bmp->image);
 
     }
     delete bmp;

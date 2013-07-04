@@ -27,8 +27,8 @@ when loading the texture check if it has been loaded by searching minor body
 number with the same texture name. if it has already been loaded then don't 
 gen/load a new texture, just copy the old gl texture number into new body.
 */
-#include "geometry.h"
-#include "bmp.h"
+#include "geometry.hpp"
+#include "bmp.hpp"
 #include <cstring>
 #define UP_ARROW 72
 #define DOWN_ARROW 80
