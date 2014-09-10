@@ -30,11 +30,13 @@ gen/load a new texture, just copy the old gl texture number into new body.
 #include "geometry.hpp"
 #include "bmp.hpp"
 #include <cstring>
+#include <fstream>
+#include <iostream>
 #define UP_ARROW 72
 #define DOWN_ARROW 80
 #define LEFT_ARROW 75
 #define RIGHT_ARROW 77
-#define bufflen 2048
+#define BUFFLEN 2048
 #define Width 800
 #define Height 600
 using namespace std;
@@ -43,7 +45,6 @@ vector<vec2> data_texcor;
 vector<body*> body_data;
 float phi, theta, fwd, rt, down;
 bool display_console=false;
-char *dir;
 void keyPressed(unsigned char key, int x, int y) 
 {
   /* avoid thrashing this procedure */
@@ -75,7 +76,7 @@ void keyPressed(unsigned char key, int x, int y)
     down+=10.0;
       break;
   case '`':
-    display_console=!display_console;
+    display_console = !display_console;
     break;
   default:
     break;
@@ -90,13 +91,12 @@ void mouse(int x, int y){
 void DrawGLScene()
 {
   //clock_t t1;
-  int i;
   // char timestr[10];
   char hlwd[]="Hello World!";
   //t1=clock();
-  unsigned bi, fi;
+  unsigned bi, fi, i;
 
-  usleep(100);
+  usleep(8000);
 
   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
   glLoadIdentity();
@@ -123,7 +123,7 @@ void DrawGLScene()
     glEnd();
     glColor3f(1.0,1.0,1.0);
     glRasterPos3f(-1.0,-0.6,-0.1);
-     for(i=0;i<strlen(hlwd);i++) 
+     for (i = 0; i < strlen(hlwd); i++) 
       glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_10,hlwd[i]);
     glLoadIdentity();
     glEnable(GL_LIGHTING);
@@ -142,10 +142,10 @@ void DrawGLScene()
   glTranslatef(rt,0.0f,0.0f);
   glTranslatef(0.0f,down,0.0f);
   
-  for(bi=0;bi<body_data.size();bi++){
+  for (bi = 0;bi < body_data.size(); bi++){
     if(body_data[bi]->TEXTURE_PRESENT && GLOBAL_TEX_PRES)
       glBindTexture(GL_TEXTURE_2D, body_data[bi]->tex_num);
-    for(fi=0;fi<body_data[bi]->face_data.size();fi++){
+    for(fi = 0;fi < body_data[bi]->face_data.size(); fi++){
       //glColor4f(1.0,1.0,1.0,
       //	body_data[bi]->alpha);
       body_data[bi]->face_data[fi]->draw(&data_vert,&data_texcor,&data_norm);
@@ -162,49 +162,57 @@ void DrawGLScene()
   glutSwapBuffers();
 }
 int main(int argc, char *argv[]){
-  FILE *data;
-  int read, window, nvert,ntex,nnorm, indm=0, i=0;
-  unsigned body_cnt=0, bi;
+  int read, nvert, ntex, nnorm, indm = 0, i = 0;
+  unsigned body_cnt = 0, bi;
   vec3 auxv3;
   vec2 auxv2;
-  char mode[]="r",*buff;
-  bool have_tex=false, file_finished=false,v=false,no_mtl=false;
+  char *buff;
+  bool v = false, no_mtl = false;
   /*==================================
 FILE PARSING CODE. PUT INTO ANOTHER PROCEDURE, FILE LATER
     ==================================*/
-  if(argc<2){cout<<"Usage:you must supply a file name"<< endl; return -1;}
-  while(argv[1][++i]!=0); while((argv[1][i]!='/') && (i>=0)) --i;
-  dir = new char[i+2];
-  strncpy(dir, argv[1], i+1);
-  dir[i+1]=0;
-  data=fopen(argv[1],mode);
-  if(data==NULL){cout<<argv[1]<<": no such file"<<endl; return -1;}
+  if (argc < 2){
+    cout << "Usage:you must supply a file name" << endl;
+    return -1;
+  }
+  std::string obj_file_name (argv[1]);
+  // get directory the file is in
+  std::string obj_directory(obj_file_name, 0, obj_file_name.rfind('/') + 1);
+  std::ifstream obj_file(argv[1]);
+  if( !obj_file.is_open() ){
+    cout << argv[1] << ": no such file" << endl;
+    return -1;
+  }
   cout<<"parsing object file"<<endl;
   //TODO:
   //assume we have avalid .obj file, problem w/ comments in the middle after
   //valid data line
   //get vertices
-  buff = new char[bufflen];
-  fgets(buff, bufflen, data);
-  indm=0; i=0;
+  buff = new char[BUFFLEN];
   body_data.push_back(new body);
-  while(!file_finished){
+  while( obj_file.good() ){
+    obj_file.getline(buff, BUFFLEN);
+    int rd_gcount = obj_file.gcount();
+    if ( (rd_gcount > 1) && (buff[rd_gcount - 2] == '\r') )
+      buff[rd_gcount - 2] = 0; 
+    indm = i = 0;
     switch(buff[0]){
     case '#':
     case ' ':
-    case 0x0a:
+    case '\0':
       //comment - skip line
       break;
     case 'u':
-      if(strncmp(buff,"usemtl", 6)==0){
-	if(!((body_data.size()==1)&&(body_data[0]->face_data.size()==0))){
-	  body_data.push_back(new body); ++body_cnt;
+      if(strncmp(buff,"usemtl", 6) == 0){
+	if (!( (body_data.size() == 1)
+	       && (body_data[0]->face_data.size() == 0))){
+	  body_data.push_back(new body);
+	  ++body_cnt;
 	}
-	i=6; while(buff[++i]!=0x0a);
-	body_data[body_cnt]->mtl_name= new char[i-7];
-	strncpy(body_data[body_cnt]->mtl_name, &buff[7],i-7);
+	body_data[body_cnt]->mtl_name= new char[strlen(&buff[7]) + 1];
+	strcpy(body_data[body_cnt]->mtl_name, &buff[7]);
 	//c+? use stl string! use string ctor here
-	i=0;
+	i = 0;
       }
       break;
     case 'd':
@@ -232,7 +240,6 @@ FILE PARSING CODE. PUT INTO ANOTHER PROCEDURE, FILE LATER
 	if(buff[2]!=' ') {if(v) cout<<"skipped line after vt"<<endl; break;}
 	sscanf(&buff[3],"%f %f",&auxv2.x, &auxv2.y);
       	data_texcor.push_back(auxv2);
-	have_tex=true;
 	break;
       case 'n':
 	if(buff[2]!=' ') {if(v) cout<<"skipped line after vn"<<endl; break;}
@@ -247,7 +254,7 @@ FILE PARSING CODE. PUT INTO ANOTHER PROCEDURE, FILE LATER
     case 'f':
       if(buff[1]!=' ') 	break;
       body_data[body_cnt]->face_data.push_back(new face);
-      read=sscanf(&buff[2],"%i/",&nvert);
+      read = sscanf(&buff[2],"%i/",&nvert);
       if (read==1){
 	indm=0; while(buff[++indm]!='/'); 
 	if(buff[++indm]=='/'){//no textures vertex//normal
@@ -262,11 +269,11 @@ FILE PARSING CODE. PUT INTO ANOTHER PROCEDURE, FILE LATER
 	    put_vert_tex_norm(nvert,nnorm);
 	  do{ //one-line loop
 	    sscanf(&buff[++indm],"%i//%i", &nvert, &nnorm);
-	    while((buff[indm]!=' ')&&(buff[indm]!=0x0a)) ++indm;
+	    while ((buff[indm] != ' ') && (buff[indm] != '\0')) ++indm;
 	    body_data[body_cnt]->
 	      face_data[body_data[body_cnt]->face_cnt]->
 	      put_vert_tex_norm(nvert,nnorm);
-	  }while(buff[indm]!=0x0a);
+	  } while (buff[indm] != '\0');
 	}
 	else if(sscanf(&buff[indm],"%i/%i",&ntex,&nnorm)==2){
 	  while(buff[++indm]!=' ');
@@ -278,11 +285,11 @@ FILE PARSING CODE. PUT INTO ANOTHER PROCEDURE, FILE LATER
 	    put_vert_tex_norm(nvert,nnorm,ntex);
 	  do{ //one-line loop
 	    sscanf(&buff[++indm],"%i/%i/%i", &nvert, &ntex,  &nnorm);
-	    while((buff[indm]!=' ')&&(buff[indm]!=0x0a)) ++indm;
+	    while ((buff[indm] != ' ') && (buff[indm] != '\0')) ++indm;
 	    body_data[body_cnt]->
 	      face_data[body_data[body_cnt]->face_cnt]->
 	      put_vert_tex_norm(nvert,nnorm,ntex);
-	  }while(buff[indm]!=0x0a);
+	  }while (buff[indm] != '\0');
 	} 
 	else if(sscanf(&buff[indm],"%i",&ntex)==1){
 	  // vertex/texture or vertex
@@ -292,11 +299,11 @@ FILE PARSING CODE. PUT INTO ANOTHER PROCEDURE, FILE LATER
 	    face_data[body_data[body_cnt]->face_cnt]->put_vert_tex(nvert,ntex);
 	  do{ //one-line loop
 	    sscanf(&buff[++indm],"%i/%i", &nvert, &ntex);
-	    while((buff[indm]!=' ')&&(buff[indm]!=0x0a)) ++indm;
+	    while ((buff[indm] != ' ') && (buff[indm] != '\0')) ++indm;
 	    body_data[body_cnt]->
 	      face_data[body_data[body_cnt]->face_cnt]->
 	      put_vert_tex_norm(nvert,ntex);
-	  }while(buff[indm]!=0x0a);
+	  } while (buff[indm] != '\0');
 	}
       }
       else{
@@ -306,54 +313,56 @@ FILE PARSING CODE. PUT INTO ANOTHER PROCEDURE, FILE LATER
 	  face_data[body_data[body_cnt]->face_cnt]->put_vert_tex(nvert);
 	do{ //one-line loop
 	  sscanf(&buff[++indm],"%i", &nvert);
-	  while((buff[indm]!=' ')&&(buff[indm]!=0x0a)) ++indm;
+	  while ((buff[indm]!=' ') && (buff[indm] != '\0')) ++indm;
 	  body_data[body_cnt]->
 	    face_data[body_data[body_cnt]->face_cnt]->put_vert_tex(nvert);
-	}while(buff[indm]!=0x0a);
+	} while (buff[indm] != '\0');
       }
       ++body_data[body_cnt]->face_cnt;
       break;
     default:
       if(v) cout<<"skipping unknown statement"<<endl;
     }
-    if(buff[++i]==EOF) file_finished=true;
-    else {
-      if(fgets(buff, bufflen, data)==NULL) file_finished=true; 
-      indm=0; i=0;
-    }
   }
   cout<<"finished parsing object file"<<endl;
-  fclose(data); i=0;
-  for(bi=0;bi<body_data.size();bi++)
-    if(body_data[bi]->mtl_name==NULL){
-      no_mtl=true;
+  obj_file.close();
+  i = 0;
+  for (bi = 0; bi < body_data.size(); bi++){
+    if (body_data[bi]->mtl_name == NULL){
+      no_mtl = true;
       if(v) cout<<"couldn't find material"<<endl;
     }
+  }
   //now parsing .mtl
-  indm=0; i=0; file_finished=false; body_cnt=0;
-  strncpy(strrchr(argv[1], '.')+1, "mtl", 3);
-  data=fopen(argv[1],mode);
-  if((data!=NULL)&&(!no_mtl)){//proceed parsing .mtl
+  body_cnt = 0;
+  std::string mtl_file_name(obj_file_name);
+  mtl_file_name.replace(mtl_file_name.rfind('.'), 4, ".mtl");
+  std::ifstream mtl_file(mtl_file_name.c_str());
+  if( mtl_file.is_open() && (!no_mtl) ){//proceed parsing .mtl
     cout<<"parsing material library file"<<endl;
-    fgets(buff, bufflen, data);
-    while(!file_finished){
+    while (mtl_file.good()){
+      indm = i = 0;
+      mtl_file.getline(buff, BUFFLEN);
+      int rd_gcount = mtl_file.gcount();
+      if ( (rd_gcount > 1) && (buff[rd_gcount - 2] == '\r') )
+	buff[rd_gcount - 2] = '\0';
       switch(buff[0]){
       case 'n':
 	//possibly newmtl	
-	if(strncmp(buff,"newmtl", 6)==0){
-	  body_cnt=0;
-	  i=6; while(buff[++i]!=0x0a);
+	if( strncmp(buff,"newmtl", 6) == 0 ){
+	  body_cnt = 0;
+	  i = 6; while (buff[++i] != '\0');
 	  //use string here also
-	  while((body_cnt<body_data.size())
-		&&(strncmp(body_data[body_cnt]->mtl_name, &buff[7],i-7)!=0))
+	  while( (body_cnt < body_data.size())
+		&& (strncmp(body_data[body_cnt]->mtl_name,
+			    &buff[7], i - 7) != 0) )
 	    ++body_cnt;
-
-	  i=0;
+	  i = 0;
 	}
 	break;
       case 'd':
-	if((buff[1]==' ')&&(body_cnt<body_data.size())) 
-	  sscanf(&buff[2],"%f",&body_data[body_cnt]->alpha);
+	if ( (buff[1] == ' ') && (body_cnt < body_data.size()) ) 
+	  sscanf(&buff[2], "%f", &body_data[body_cnt]->alpha);
 	break;
       case 'T':
 	if((buff[1]=='r')&&(body_cnt<body_data.size())) 
@@ -361,23 +370,17 @@ FILE PARSING CODE. PUT INTO ANOTHER PROCEDURE, FILE LATER
 	break;
       case 'm':
 	i=0;
+	// TODO
 	//map_...
-	if((strncmp(buff,"map_Kd", 6)==0)&&(body_cnt<body_data.size())){
-	  i=6; while(buff[++i]!=0x0a);
-	  body_data[body_cnt]->tex_name = new char[i-7];
-	  strncpy(body_data[body_cnt]->tex_name,&buff[7], i-7);
-	  *(body_data[body_cnt]->tex_name+i-8) = 0;
+	// correctly treat unwanted spaces 
+	if( (strncmp(buff,"map_Kd", 6) == 0) && (body_cnt < body_data.size()) ){
+	  body_data[body_cnt]->tex_name = new char[strlen(&buff[7]) + 1];
+	  strcpy(body_data[body_cnt]->tex_name, &buff[7]);
 	  body_data[body_cnt]->TEXTURE_PRESENT = true;
 	}
 	break;
       default:
 	if(v) cout<<"skipping unknown statement in .mtl"<<endl;
-      }
-      if(buff[++i]==EOF) file_finished=true;
-      else {
-	if(fgets(buff, bufflen, data)==NULL)
-	  file_finished=true;
-	indm=0; i=0;
       }
     }
   }
@@ -386,9 +389,10 @@ FILE PARSING CODE. PUT INTO ANOTHER PROCEDURE, FILE LATER
     //do whatever required to proceed without this file
   }
   cout<<"finished parsing material library file"<<endl;
-  delete buff;
-  for(bi=0;bi<body_data.size();bi++)
-    i+=body_data[bi]->face_data.size();
+  delete[] buff;
+  mtl_file.close();
+  for( bi = 0; bi < body_data.size(); bi++)
+    i += body_data[bi]->face_data.size();
   cout<<"read:"<<endl<<"\t"<<data_vert.size()<<" vertices,"<<endl
       <<"\t"<<data_norm.size()<<" normals,"<<endl
       <<"\t"<<data_texcor.size()<<" texture coordinates,"<<endl
@@ -399,7 +403,7 @@ FILE PARSING CODE. PUT INTO ANOTHER PROCEDURE, FILE LATER
   glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH);   
   glutInitWindowSize(Width, Height);  
   glutInitWindowPosition(0, 0);  
-  window = glutCreateWindow("hi");  
+  glutCreateWindow("hi");  
   glutDisplayFunc(&DrawGLScene);  
   glutIdleFunc(&DrawGLScene);
   glutKeyboardFunc(&keyPressed);
@@ -430,13 +434,26 @@ FILE PARSING CODE. PUT INTO ANOTHER PROCEDURE, FILE LATER
   if(GLOBAL_TEX_PRES){
     glEnable(GL_TEXTURE_2D);
     //last! 
-    for(bi=0;bi<body_data.size();bi++)
-      body_data[bi]->load_texture(dir);
+    for( bi = 0; bi < body_data.size(); bi++){
+      bool loaded = false;
+      unsigned bbi;
+      if (!body_data[bi]->tex_name) continue;
+      for (bbi = 0; bbi < bi; bbi++){
+      	// optimize this code via map/hash table?
+      	if (!body_data[bbi]->tex_name) continue;
+      	if ( !strcmp(body_data[bbi]->tex_name, body_data[bi]->tex_name) ){
+      	  loaded = true;
+      	  break;
+      	}
+      }
+      if (!loaded) body_data[bi]->load_texture(obj_directory);
+      else body_data[bi]->tex_num = body_data[bbi]->tex_num;
+    }
   }
 
   glutMainLoop();  
 
-
+  for (bi = 0; bi < body_data.size(); bi++) delete body_data[i];
   return 0;
 }
 

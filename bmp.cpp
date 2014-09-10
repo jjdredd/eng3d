@@ -1,16 +1,20 @@
 #include "bmp.hpp"
-bmp_loader::bmp_loader(char* path){
-  this->file_path=path;
+
+bmp_loader::bmp_loader(const char* path){
+  this->file_path = strdup(path);
   allocated = false;
   return;
 }
 bmp_loader::~bmp_loader(){
-  if(allocated) delete raw_img;
+  if(allocated) delete[] raw_img;
+  free(this->file_path);
 }
 char *bmp_loader::load_bmp(){
   //int i,j,k;
-  fd=fopen(this->file_path, "r");
-  if (fd==NULL){ return NULL;}
+  if ( !(fd = fopen(this->file_path, "r")) ){
+    cout << "BMP LOADER:: couldn't open file: " << this->file_path << '\n';
+    return NULL;
+  }
   fread(sign, sizeof(char), 2, fd);
   if(strncmp(sign, "BM", 2)!=0) return NULL;
   fseek(fd, FOFS_IMGDAT_PTR, SEEK_SET);
@@ -24,7 +28,7 @@ char *bmp_loader::load_bmp(){
   raw_img = new char[img_size];
   allocated = true;
   fseek(fd, img_dat_offset, SEEK_SET);
-  if (fread(raw_img, sizeof(char), img_size, fd)!=img_size) return NULL;
+  if (fread(raw_img, sizeof(char), img_size, fd) != img_size) return NULL;
   /*
   image =(char ***) new char*[height];
   for(i=0;i<height;i++){

@@ -1,6 +1,6 @@
-CXXOPTFLAGS = -O3 -march=native
+CXXOPTFLAGS = -O0 -march=native
 GLFLAGS = -lglut -lGLU -lGL
-CXXFLAGS = -W -Wall --pedantic
+CXXFLAGS = -W -Wextra -Wall --pedantic -g
 main: main.cpp geometry.o bmp.o geometry.hpp
 	g++ main.cpp geometry.o bmp.o -o main $(CXXFLAGS) $(GLFLAGS) $(CXXOPTFLAGS)
 geometry.o: geometry.cpp geometry.hpp bmp.hpp
