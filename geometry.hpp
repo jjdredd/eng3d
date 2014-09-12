@@ -47,7 +47,7 @@ class body{
   bool TEXTURE_PRESENT;
   int face_cnt;
   GLuint tex_num;
-  char *mtl_name, *tex_name;
+  std::string mtl_name, tex_name;
   float alpha;
   body();
   ~body();

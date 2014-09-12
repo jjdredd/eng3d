@@ -52,28 +52,28 @@ void keyPressed(unsigned char key, int x, int y)
   
   switch (key) {    
   case 'w':
-    fwd+=1.0;
+    fwd += 1.0;
     break;
   case 's':
-    fwd-=1.0;
+    fwd -= 1.0;
     break;
   case 'a':
-      rt+=1.0;
+      rt += 1.0;
       break;
   case 'd':
-    rt-=1.0;
+    rt -= 1.0;
     break;
   case 'o':
-    down-=1.0;
+    down -= 1.0;
     break;
   case 'l':
-      down+=1.0;
-      break;
+    down += 1.0;
+    break;
   case 'O':
-    down-=10.0;
+    down -= 10.0;
     break;
   case 'L':
-    down+=10.0;
+    down += 10.0;
       break;
   case '`':
     display_console = !display_console;
@@ -136,11 +136,11 @@ void DrawGLScene()
   //glTranslatef(rt*cosf(phi/360)+fwd*sinf(phi/360),
   //	       fwd*sinf(theta/360),
   //	       fwd*cosf(theta/360)+rt*sinf(phi));
-  glRotatef(theta,1.0,0.0,0.0);
-  glRotatef(phi,0.0,1.0,0.0);
   glTranslatef(0.0f,0.0f,fwd);
   glTranslatef(rt,0.0f,0.0f);
   glTranslatef(0.0f,down,0.0f);
+  glRotatef(theta,1.0,0.0,0.0);
+  glRotatef(phi,0.0,1.0,0.0);
   
   for (bi = 0;bi < body_data.size(); bi++){
     if(body_data[bi]->TEXTURE_PRESENT && GLOBAL_TEX_PRES)
@@ -209,8 +209,7 @@ FILE PARSING CODE. PUT INTO ANOTHER PROCEDURE, FILE LATER
 	  body_data.push_back(new body);
 	  ++body_cnt;
 	}
-	body_data[body_cnt]->mtl_name= new char[strlen(&buff[7]) + 1];
-	strcpy(body_data[body_cnt]->mtl_name, &buff[7]);
+	body_data[body_cnt]->mtl_name = &buff[7];
 	//c+? use stl string! use string ctor here
 	i = 0;
       }
@@ -328,7 +327,7 @@ FILE PARSING CODE. PUT INTO ANOTHER PROCEDURE, FILE LATER
   obj_file.close();
   i = 0;
   for (bi = 0; bi < body_data.size(); bi++){
-    if (body_data[bi]->mtl_name == NULL){
+    if (body_data[bi]->mtl_name.empty()){
       no_mtl = true;
       if(v) cout<<"couldn't find material"<<endl;
     }
@@ -354,8 +353,7 @@ FILE PARSING CODE. PUT INTO ANOTHER PROCEDURE, FILE LATER
 	  i = 6; while (buff[++i] != '\0');
 	  //use string here also
 	  while( (body_cnt < body_data.size())
-		&& (strncmp(body_data[body_cnt]->mtl_name,
-			    &buff[7], i - 7) != 0) )
+		 && body_data[body_cnt]->mtl_name.compare(&buff[7]) )
 	    ++body_cnt;
 	  i = 0;
 	}
@@ -369,13 +367,12 @@ FILE PARSING CODE. PUT INTO ANOTHER PROCEDURE, FILE LATER
 	  sscanf(&buff[2]," %f",&body_data[body_cnt]->alpha);
 	break;
       case 'm':
-	i=0;
+	i = 0;
 	// TODO
 	//map_...
 	// correctly treat unwanted spaces 
 	if( (strncmp(buff,"map_Kd", 6) == 0) && (body_cnt < body_data.size()) ){
-	  body_data[body_cnt]->tex_name = new char[strlen(&buff[7]) + 1];
-	  strcpy(body_data[body_cnt]->tex_name, &buff[7]);
+	  body_data[body_cnt]->tex_name = &buff[7];
 	  body_data[body_cnt]->TEXTURE_PRESENT = true;
 	}
 	break;
@@ -437,11 +434,11 @@ FILE PARSING CODE. PUT INTO ANOTHER PROCEDURE, FILE LATER
     for( bi = 0; bi < body_data.size(); bi++){
       bool loaded = false;
       unsigned bbi;
-      if (!body_data[bi]->tex_name) continue;
+      if (body_data[bi]->tex_name.empty()) continue;
       for (bbi = 0; bbi < bi; bbi++){
       	// optimize this code via map/hash table?
-      	if (!body_data[bbi]->tex_name) continue;
-      	if ( !strcmp(body_data[bbi]->tex_name, body_data[bi]->tex_name) ){
+      	if (body_data[bbi]->tex_name.empty()) continue;
+      	if ( !body_data[bbi]->tex_name.compare(body_data[bi]->tex_name) ){
       	  loaded = true;
       	  break;
       	}

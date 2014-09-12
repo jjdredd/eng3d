@@ -63,16 +63,12 @@ void face::put_vert_tex(int a1, int c1){
 }
 body::body(){
   this->face_cnt = 0; 
-  this->mtl_name = NULL;
-  this->tex_name = NULL;
   this->alpha = 1.0;
   this->TEXTURE_PRESENT = false;
   return;
 }
 body::~body(){
     //free everythin'
-  delete[] this->mtl_name;
-  delete[] this->tex_name;
   for (unsigned i = 0; i < face_data.size(); i++) delete face_data[i];
 }
 void body::load_texture(std::string& dir){
