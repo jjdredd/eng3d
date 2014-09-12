@@ -3,7 +3,8 @@
 face::face(){ return;}
 face::~face(){
     //free everythin'
-  }
+}
+
 void face::draw(vector<vec3>* v,vector<vec2>* t,vector<vec3>* n){
   unsigned  fi;
   /*  bool normpres=true;
@@ -50,27 +51,34 @@ void face::draw(vector<vec3>* v,vector<vec2>* t,vector<vec3>* n){
     glEnd();
   }
 }
+
 void face::put_vert_tex_norm(int a1, int b1, int c1){
   //if (c1==0) notexture;
   intvec3 d;
   d.a = a1; d.b = b1; d.c = c1;
   vert_tex_norm.push_back(d);
 }
+
 void face::put_vert_tex(int a1, int c1){
   intvec3 d;
   d.a = a1; d.b = 0; d.c = c1;
   vert_tex_norm.push_back(d);
 }
+
+// now body stuff
 body::body(){
   this->face_cnt = 0; 
   this->alpha = 1.0;
   this->TEXTURE_PRESENT = false;
   return;
 }
+
 body::~body(){
     //free everythin'
   for (unsigned i = 0; i < face_data.size(); i++) delete face_data[i];
+  glDeleteTextures(1, &this->tex_num);
 }
+
 void body::load_texture(std::string& dir){
   string tex_path;
   if ( !(this->TEXTURE_PRESENT))
@@ -84,7 +92,7 @@ void body::load_texture(std::string& dir){
   /*glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);*/    
   tex_path = dir + this->tex_name;
   cout << "loading texture: " << tex_path << endl;
-  bmp_loader bmp(tex_path.c_str());
+  bmp_loader bmp(tex_path);
 
   if (bmp.load_bmp()){
     gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGB, bmp.width, bmp.height,

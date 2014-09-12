@@ -1,14 +1,23 @@
 #include "bmp.hpp"
 
+bmp_loader::bmp_loader(std::string &s){
+  this->file_path = strdup(s.c_str());
+  allocated = false;
+  return;
+}
+
 bmp_loader::bmp_loader(const char* path){
   this->file_path = strdup(path);
   allocated = false;
   return;
 }
+
 bmp_loader::~bmp_loader(){
   if(allocated) delete[] raw_img;
   free(this->file_path);
 }
+
+// move this constructor!!!
 char *bmp_loader::load_bmp(){
   //int i,j,k;
   if ( !(fd = fopen(this->file_path, "r")) ){

@@ -1,3 +1,6 @@
+#ifndef _GEOMETRY_
+#define _GEOMETRY_
+
 #include <vector>
 #include <iostream>
 #include <cstdio>
@@ -53,3 +56,5 @@ class body{
   ~body();
   void load_texture(std::string &);
 };
+
+#endif	// _GEOMETRY_

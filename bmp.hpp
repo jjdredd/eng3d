@@ -1,3 +1,6 @@
+#ifndef _BMP_
+#define _BMP_
+
 #include <vector>
 #include <iostream>
 #include <cstdio>
@@ -13,11 +16,13 @@
 using namespace std;
 class bmp_loader{
  public:
+  bmp_loader(std::string &);
   bmp_loader(const char *);
   ~bmp_loader();
   char *image;
   int  width, height;
-  char *load_bmp();
+  char *load_bmp(); 		// move this to constructor
+  // make error report functions!!
  private:
   unsigned  img_dat_offset, img_size;
   char *raw_img, *file_path;
@@ -25,3 +30,5 @@ class bmp_loader{
   char sign[2];
   bool allocated;
 };
+
+#endif	// _BMP_
