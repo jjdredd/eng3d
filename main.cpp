@@ -151,7 +151,9 @@ int main(int argc, char *argv[]){
 
 
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);	
-  glClearDepth(1.0);			
+  glClearDepth(1.0);
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
   glDepthFunc(GL_LESS);			
   glEnable(GL_DEPTH_TEST);		
   glShadeModel(GL_SMOOTH);

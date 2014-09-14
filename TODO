@@ -1,0 +1,37 @@
+TODO:
+!!!At the end every piece of code (if required) must be formed into it's
+personal appropriate function (class) & file!!!
+body must beinherited by "creature?" class which has function "morph" 
+to manipulate vertex data 
+TODO: 
+!!make the code length-of-line independent!!!
+using std::string? instead of char[] buff
+TODO:
+vetex/texture & no normal
+TODO:
+c++, not c+
+TODO:
+proper alpha
+TODO:
+proper bmp loader
+TODO:
+!!free in dtors
+TODO:
+console class
+TODO:
+!what if different bodies use 1 texture. allow no texture duplicates 
+in memory!!! for this use std::map. map materials to body numbers.
+when loading the texture check if it has been loaded by searching minor body 
+number with the same texture name. if it has already been loaded then don't 
+gen/load a new texture, just copy the old gl texture number into new body.
+TODO:
+Copy, assignment operator for VisPhys, body and face.
+TODO:
+bmp_loader : make error report functions, move load_bmp to constructor
+TODO:
+Renderere singleton class?
+TODO:
+shadows and physics
+TODO:
+use glVertexPointer, glBindBuffer, glTexCoordPointer, glNormalPointer, glMultiDrawArrays
+for that recompile .obj to a better format (and write to .objc?)
