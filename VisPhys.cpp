@@ -241,6 +241,7 @@ void VisPhys::PrintStats(){
 }
 
 VisPhys::~VisPhys(){
+  // do we really need this?
   for (unsigned bi = 0; bi < body_data.size(); bi++) delete body_data[bi];
 }
 
