@@ -35,3 +35,15 @@ shadows and physics
 TODO:
 use glVertexPointer, glBindBuffer, glTexCoordPointer, glNormalPointer, glMultiDrawArrays
 for that recompile .obj to a better format (and write to .objc?)
+
+TODO:
+DO SOMETHING WITH CODE STYLE AND INDENTATION!!!!!!
+
+TODO:
+implement obj relative referencing
+
+TODO:
+incapsulation
+
+TODO:
+implement support for multiple mtllib files

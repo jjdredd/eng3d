@@ -1,6 +1,9 @@
 #ifndef _VISPHYS_
 #define _VISPHYS_
 
+#include <iostream>
+#include <fstream>
+
 #include "geometry.hpp"
 
 class VisPhys{
@@ -8,6 +11,7 @@ class VisPhys{
 public:
   // VisPhys(std::string &);
   VisPhys(char *);
+  VisPhys(std::string);
   ~VisPhys();
   void draw(void);
   void LoadTextures(void);

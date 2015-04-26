@@ -1,8 +1,52 @@
 #include "VisPhys.hpp"
-#include <iostream>
-#include <fstream>
 
 #define BUFFLEN 2048
+
+
+VisPhys::VisPhys(char *file){
+  std::string obj_filename(file);
+  VisPhys(obj_filename);
+}
+
+VisPhys::VisPhys(std::string file_name){
+  std::vector<std::string> lines;
+  std::ifstream obj_file(file_name);
+  std::string last_mtllib;
+
+  obj_directory = obj_file_name.substr(0, file_name.rfind('/') + 1);
+  if( !obj_file.is_open() ){
+    cout << file_name << ": no such file" << endl;
+    return;
+  }
+  // read all the lines first
+  while( obj_file.good() ){
+    std::string s;
+    getline(obj_file, s);
+    s.erase(s.find('#'), s.length()); // get rid of comments
+    lines.push_back(s);
+  }
+  for(std::vector<std::string> line_i = 0; line_i != lines.end(); line_i++){
+
+    if(!line_i->length()) continue; // avoid empty or comment-only lines
+    switch(*line_i[0]){
+    case 'u':
+      if(lines_i->substr(0, 6, "usemtl") == "usemtl"){
+	// new usemtl declaration
+	// last_mtl = line_i->substr(7, line_i->length());
+	body_data.push_back(new body);
+	body_data.rbegin()->mtl_name = line_i->substr(7, line_i->length());
+      }
+      break;
+    case 'f':
+      // parse face line
+
+      break;
+    case 'm':
+    }
+  }
+}
+
+#if 0				// comment old constructor
 
 VisPhys::VisPhys(char *file){
   int read, nvert, ntex, nnorm, indm = 0, i = 0;
@@ -227,6 +271,8 @@ VisPhys::VisPhys(char *file){
   mtl_file.close();
 
 }
+
+#endif	// commenting old constructor
 
 void VisPhys::PrintStats(){
   int i = 0;
