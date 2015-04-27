@@ -33,7 +33,8 @@ Renderere singleton class?
 TODO:
 shadows and physics
 TODO:
-use glVertexPointer, glBindBuffer, glTexCoordPointer, glNormalPointer, glMultiDrawArrays
+use glVertexPointer, glBindBuffer, glTexCoordPointer, glNormalPointer,
+glMultiDrawArrays
 for that recompile .obj to a better format (and write to .objc?)
 
 TODO:

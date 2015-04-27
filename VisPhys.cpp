@@ -1,19 +1,17 @@
 #include "VisPhys.hpp"
 
-#define BUFFLEN 2048
-
-
 VisPhys::VisPhys(char *file){
   std::string obj_filename(file);
   VisPhys(obj_filename);
 }
 
-VisPhys::VisPhys(std::string file_name){
+VisPhys::VisPhys(std::string& file_name){
   std::vector<std::string> lines;
   std::ifstream obj_file(file_name);
   std::string last_mtllib;
+  std::string basename = file_name.substr(0, file_name.rfind('.'));
 
-  obj_directory = obj_file_name.substr(0, file_name.rfind('/') + 1);
+  obj_directory = file_name.substr(0, file_name.rfind('/') + 1);
   if( !obj_file.is_open() ){
     cout << file_name << ": no such file" << endl;
     return;
@@ -25,16 +23,17 @@ VisPhys::VisPhys(std::string file_name){
     s.erase(s.find('#'), s.length()); // get rid of comments
     lines.push_back(s);
   }
-  for(std::vector<std::string> line_i = 0; line_i != lines.end(); line_i++){
+  for(std::vector<std::string>::iterator line_i = 0;
+      line_i != lines.end(); line_i++){
 
-    if(!line_i->length()) continue; // avoid empty or comment-only lines
+    if(line_i->empty()) continue; // avoid empty or comment-only lines
     switch(*line_i[0]){
     case 'u':
-      if(lines_i->substr(0, 6, "usemtl") == "usemtl"){
+      if(lines_i->compare(0, 7, "usemtl ")){
 	// new usemtl declaration
-	// last_mtl = line_i->substr(7, line_i->length());
-	body_data.push_back(new body);
-	body_data.rbegin()->mtl_name = line_i->substr(7, line_i->length());
+	if(last_mtllib.empty()) last_mtllib = basename + "mtl";
+	body *b = new body(line_i->substr(7, line_i->length()), last_mtllib);
+	body_data.push_back(b);
       }
       break;
     case 'f':
@@ -42,11 +41,18 @@ VisPhys::VisPhys(std::string file_name){
 
       break;
     case 'm':
+      if(lines_i->compare(0, 7, "mtllib "))
+	last_mtllib = line_i->substr(7, line_i->length());
+      break;
+    default:
+
     }
   }
 }
 
 #if 0				// comment old constructor
+
+#define BUFFLEN 2048
 
 VisPhys::VisPhys(char *file){
   int read, nvert, ntex, nnorm, indm = 0, i = 0;

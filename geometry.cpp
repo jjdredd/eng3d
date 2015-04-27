@@ -66,10 +66,12 @@ void face::put_vert_tex(int a1, int c1){
 }
 
 // now body stuff
-body::body(){
-  this->face_cnt = 0; 
-  this->alpha = 1.0;
-  this->TEXTURE_PRESENT = false;
+body::body(std::string& m, std::string& f)
+  :mtl_name(m), mtllib_file(f), textures(true), normals(true) {
+  // assume there are normals and textures - we can change this
+  // if it turns out to be wrong
+  face_cnt = 0;
+  alpha = 1.0;
   return;
 }
 

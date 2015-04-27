@@ -32,29 +32,30 @@ typedef struct{
 
 class face{
   //vector of textures , vertices & a normal vector
- public:
+public:
   face();
   ~face();
-  void draw(vector<vec3>* v, vector<vec2>* t=NULL, vector<vec3>* n=NULL);
-  void put_vert_tex_norm(int a, int b, int c = 0);
-  void put_vert_tex(int a1, int c1 = 0);
-  bool TEXTURE_PRESENT;
-  vector<intvec3> vert_tex_norm; //does it belong in private?
- private:
-  int nvert; //number of vertices
+  draw_face();
+  add_vertex(vec3, vec3);
+
+private:
+  std::vector<vec3> vectices, normals;
+  std::vector<vec2> textures;
 };
 
 class body{
- public:
-  vector<face*> face_data;
-  bool TEXTURE_PRESENT;
-  int face_cnt;
-  GLuint tex_num;
-  std::string mtl_name, tex_name;
-  float alpha;
-  body();
+
+public:
+  bool textures, normals;
+  body(std::string&, std::string&);
   ~body();
-  void load_texture(std::string &);
+  void load_texture(std::string&);
+
+private:
+  std::string mtl_name, tex_name, mtllib_file;
+  GLuint tex_num;
+  float alpha;
+  vector<face*> faces;
 };
 
 #endif	// _GEOMETRY_
