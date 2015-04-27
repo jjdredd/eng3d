@@ -1,30 +1,26 @@
 #include "VisPhys.hpp"
 
-static void parse_v3(std::vector<vec3>& v, std::string *s){
+static void parse_v3(std::vector<vec3>& v, std::string& s){
 	vec3 a;
-	sscanf(s->c_str() + s->find(' '), "%f %f %f", &a.x, &a.y, &a.z);
+	sscanf(s.c_str() + s.find(' '), "%f %f %f", &a.x, &a.y, &a.z);
 	v.push_back(a);
 }
 
-static void parse_v2(std::vector<vec2>& t, std::string *s){
+static void parse_v2(std::vector<vec2>& t, std::string& s){
 	vec2 a;
-	sscanf(s->c_str() + s->find(' '), "%f %f", &a.x, &a.y);
+	sscanf(s.c_str() + s.find(' '), "%f %f", &a.x, &a.y);
 	t.push_back(a);
-}
-
-VisPhys::VisPhys(char *file){
-	std::string obj_filename(file);
-	VisPhys(obj_filename);
 }
 
 VisPhys::VisPhys(std::string& file_name){
 	std::vector<std::string> lines;
 	std::vector<vec3> v, n;
 	std::vector<vec2> t;
-	std::ifstream obj_file(file_name);
+	std::ifstream obj_file(file_name.c_str());
 	std::string last_mtllib;
 	std::string basename = file_name.substr(0, file_name.rfind('.'));
 
+	// parse .obj file first
 	obj_directory = file_name.substr(0, file_name.rfind('/') + 1);
 	if(!obj_file.is_open()){
 		cout << file_name << ": no such file" << endl;
@@ -37,7 +33,10 @@ VisPhys::VisPhys(std::string& file_name){
 		s.erase(s.find('#'), s.length()); // get rid of comments
 		lines.push_back(s);
 	}
-	for(int l = 0; l < lines.size(); l++){
+	for(unsigned l = 0; l < lines.size(); l++){
+
+		body *b;
+		std::string Nmtl;
 
 		// avoid empty or comment-only lines
 		if(lines[l].empty()) continue;
@@ -45,19 +44,19 @@ VisPhys::VisPhys(std::string& file_name){
 
 		case 'u':
 			if(lines[l].compare(0, 7, "usemtl ")) break;
-			
+
 			// new usemtl declaration
 			if(last_mtllib.empty())
 				last_mtllib = basename + "mtl";
-			body *b = new body(lines[l].substr(7,
-							   lines[l].length()),
-					   last_mtllib);
+			Nmtl = lines[l].substr(7, lines[l].length());
+			b = new body(Nmtl, last_mtllib);
+
 			bodies.push_back(b);
 			break;
 
 		case 'f':
 			// parse face line
-			bodies.rbegin()->add_face(lines[l], v, n, t);
+			(*bodies.rbegin())->add_face(lines[l], v, n, t);
 			break;
 
 		case 'm':
@@ -70,7 +69,7 @@ VisPhys::VisPhys(std::string& file_name){
 			else if(lines[l][1] == 'n') parse_v3(n, lines[l]);
 			else if(lines[l][1] == 't') parse_v2(t, lines[l]);
 
-		default:
+		default: break;
 
 		}
 	}
@@ -304,8 +303,6 @@ VisPhys::VisPhys(char *file){
 
 }
 
-#endif	// commenting old constructor
-
 void VisPhys::PrintStats(){
 	int i = 0;
 	for (unsigned bi = 0; bi < body_data.size(); bi++)
@@ -318,10 +315,11 @@ void VisPhys::PrintStats(){
 
 }
 
-VisPhys::~VisPhys(){
-	// do we really need this?
-	for (unsigned bi = 0; bi < body_data.size(); bi++) delete body_data[bi];
-}
+
+#endif	// commenting old constructor
+
+
+VisPhys::~VisPhys(){}
 
 void VisPhys::LoadTextures(){
 	// error reporting and handling?
@@ -339,20 +337,5 @@ void VisPhys::LoadTextures(){
 		}
 		if (!loaded) body_data[bi]->load_texture(obj_directory);
 		else body_data[bi]->tex_num = body_data[bbi]->tex_num;
-	}
-}
-
-void VisPhys::draw(){
-   
-	for (unsigned bi = 0; bi < body_data.size(); bi++){
-		// remove GLOBAL_TEX_PRES ????
-		if(body_data[bi]->TEXTURE_PRESENT && GLOBAL_TEX_PRES)
-			glBindTexture(GL_TEXTURE_2D, body_data[bi]->tex_num);
-		// move the following loop to body draw function
-		for(unsigned fi = 0;fi < body_data[bi]->face_data.size(); fi++){
-			//glColor4f(1.0,1.0,1.0,
-			//	body_data[bi]->alpha);
-			body_data[bi]->face_data[fi]->draw(&data_vert, &data_texcor, &data_norm);
-		}
 	}
 }

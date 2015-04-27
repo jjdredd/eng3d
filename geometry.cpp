@@ -3,122 +3,147 @@
 
 face::face(){ return;}
 face::~face(){
-    //free everythin'
+	//free everythin'
 }
 
-void face::draw(vector<vec3>* v,vector<vec2>* t,vector<vec3>* n){
-  unsigned  fi;
-  /*  bool normpres=true;
-  float x, y, z;
-  if(((*n)[vert_tex_norm[0].b-1].x==0)&&
-     ((*n)[vert_tex_norm[0].b-1].y==0)&&
-     ((*n)[vert_tex_norm[0].b-1].z==0))
-    {
-       //no normals
-       normpres=false;
-             
-    }
-  */
-
-  //draw lines if GLOBAL_LINES_FLAG&&THIS->LOCAL_TEXTURE_NOT_PRESENT
-  //VVVIS SHIT
-  if (GLOBAL_TEX_PRES && this->TEXTURE_PRESENT && (t != NULL)){ //with textures
-    glBegin(GL_POLYGON);
-    for( fi=0; fi < vert_tex_norm.size(); fi++){
-      //if(normpres)
-      glNormal3f((*n)[vert_tex_norm[fi].b-1].x,
-      		 (*n)[vert_tex_norm[fi].b-1].y,
-      		 (*n)[vert_tex_norm[fi].b-1].z);
-      glTexCoord2f((*t)[vert_tex_norm[fi].c-1].x,
-		   (*t)[vert_tex_norm[fi].c-1].y);
-      glVertex3f((*v)[vert_tex_norm[fi].a-1].x,
-		 (*v)[vert_tex_norm[fi].a-1].y,
-		 (*v)[vert_tex_norm[fi].a-1].z);
-    }
-    glEnd();
-    
-  }
-  else{ //no textures
-    glBegin(GL_POLYGON);
-    for( fi = 0; fi < vert_tex_norm.size(); fi++){
-      //if(normpres)
-      glNormal3f((*n)[vert_tex_norm[fi].b-1].x,
-      		 (*n)[vert_tex_norm[fi].b-1].y,
-      		 (*n)[vert_tex_norm[fi].b-1].z);
-      glVertex3f((*v)[vert_tex_norm[fi].a-1].x,
-		 (*v)[vert_tex_norm[fi].a-1].y,
-		 (*v)[vert_tex_norm[fi].a-1].z);
-    }
-    glEnd();
-  }
+void face::add_vertex(vec3& v, vec3& n, vec2& t){
+	vertices.push_back(v);
+	normals.push_back(n);
+	textures.push_back(t);
 }
 
-void face::put_vert_tex_norm(int a1, int b1, int c1){
-  //if (c1==0) notexture;
-  intvec3 d;
-  d.a = a1; d.b = b1; d.c = c1;
-  vert_tex_norm.push_back(d);
+void face::add_vertex(vec3& v, vec3& n){
+	vertices.push_back(v);
+	normals.push_back(n);
 }
 
-void face::put_vert_tex(int a1, int c1){
-  intvec3 d;
-  d.a = a1; d.b = 0; d.c = c1;
-  vert_tex_norm.push_back(d);
+void face::add_vertex(vec3& v, vec2& t){
+	vertices.push_back(v);
+	textures.push_back(t);
+
+}
+void face::add_vertex(vec3& v){
+	vertices.push_back(v);
 }
 
-// now body stuff
+
+
+////////////////
+// CLASS BODY //
+////////////////
+
+
 body::body(std::string& m, std::string& f)
-  :mtl_name(m), mtllib_file(f), textures(true), normals(true) {
-  // assume there are normals and textures - we can change this
-  // if it turns out to be wrong
-  face_cnt = 0;
-  alpha = 1.0;
-  return;
+	:mtl_name(m), mtllib_file(f), textures(true),
+	 // assume there are normals and textures - we can change this later
+	 normals(true), alpha(1.0){
+
+	std::vector<std::string> lines;
+	std::ifstream fmtl(mtllib_file.c_str());
+	unsigned l;
+
+	if(!fmtl.is_open()){
+		cout << mtllib_file << ": no such file" << endl;
+		return;
+	}
+	// read all the lines first
+	while(fmtl.good()){
+		std::string s;
+		std::getline(fmtl, s);
+		s.erase(s.find('#'), s.length()); // get rid of comments
+		lines.push_back(s);
+	}
+
+	for(l = 0; l < lines.size(); l++){
+		// skip unnecessary info before our material
+		if(!lines[l].compare(0, 7, "newmtl ")
+		   && lines[l].substr(7, lines[l].length()) == mtl_name)
+			break;
+	}
+	for(++l; l < lines.size(); l++){
+
+		if(lines[l].empty()) continue;
+
+		switch(lines[l][0]){
+
+		case 'm':
+			if(lines[l].compare(0, 7, "map_Kd ")) break;
+			texture_name = lines[l].substr(7, lines[l].length());
+			break;
+
+		case 'd':
+		case 'T':
+			// TODO implement transparency
+
+		default: break;
+		}
+	}
 }
 
 body::~body(){
-    //free everythin'
-  for (unsigned i = 0; i < face_data.size(); i++) delete face_data[i];
-  glDeleteTextures(1, &this->tex_num);
+	glDeleteTextures(1, &tex_num);
 }
 
-void add_face(std::string& s, std::vector<vec3>& v,
-	      std::vector<vec3>& n, std::vector<vec2>& t){
+void body::add_face(std::string& s, std::vector<vec3>& v,
+		    std::vector<vec3>& n, std::vector<vec2>& t){
 
 	std::stringstream ss(s);
 	std::string sp;
 	face *f = new face;
 	int nv, nn, nt;
 	while(std::getline(ss, sp, ' ')){
-
-		f->add_vertex();
+		if(textures && normals){
+			if(sscanf(sp.c_str(), "%i/%i/%i", &nv, &nt, &nn)
+			   == 3){
+				f->add_vertex(v[nv], n[nn], t[nt]);
+				continue;
+			}
+		}
+		if(normals){
+			if(sscanf(sp.c_str(), "%i//%i", &nv, &nn) == 2){
+				textures = false;
+				f->add_vertex(v[nv], n[nn]);
+				continue;
+			}
+		}
+		if(textures){
+			if(sscanf(sp.c_str(), "%i/%i", &nv, &nt) == 2){
+				normals = false;
+				f->add_vertex(v[nv], t[nt]);
+				continue;
+			}
+		}
+		if(sscanf(sp.c_str(), "%i", &nv) == 1){
+			textures = false;
+			normals = false;
+			f->add_vertex(v[nv]);
+		}
 	}
-	faces.push_back(f);						 
+	faces.push_back(f);
 }
 
 void body::load_texture(std::string& dir){
-  string tex_path;
-  if ( !(this->TEXTURE_PRESENT))
-    return;
-  glGenTextures(1, &this->tex_num);
-  glBindTexture(GL_TEXTURE_2D, this->tex_num);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,
-		  GL_LINEAR_MIPMAP_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,
-		  GL_LINEAR_MIPMAP_LINEAR);
-  /*glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);*/    
-  tex_path = dir + this->tex_name;
-  cout << "loading texture: " << tex_path << endl;
-  bmp_loader bmp(tex_path);
+	string tex_path;
+	if (!textures) return;
+	glGenTextures(1, &this->tex_num);
+	glBindTexture(GL_TEXTURE_2D, this->tex_num);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,
+			GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,
+			GL_LINEAR_MIPMAP_LINEAR);
+	/*glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);*/    
+	tex_path = dir + this->tex_name;
+	cout << "loading texture: " << tex_path << endl;
+	bmp_loader bmp(tex_path);
 
-  if (bmp.load_bmp()){
-    gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGB, bmp.width, bmp.height,
-		      GL_BGR, GL_UNSIGNED_BYTE, bmp.image);
+	if (bmp.load_bmp()){
+		gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGB, bmp.width, bmp.height,
+				  GL_BGR, GL_UNSIGNED_BYTE, bmp.image);
 
-  } else {
-    cout << "failed to load " << this->tex_name << '\n';
-    this->TEXTURE_PRESENT = false;
-  }
+	} else {
+		cout << "failed to load " << this->tex_name << '\n';
+		textures = false;
+	}
 
-  return;
+	return;
 }

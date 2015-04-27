@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <cstdio>
 #include <GL/freeglut.h>    
@@ -35,11 +36,14 @@ class face{
 public:
 	face();
 	~face();
-	draw_face();
-	add_vertex(vec3&, vec3&, vec2&);
+	void draw_face();
+	void add_vertex(vec3&, vec3&, vec2&); // vert/tex/norm
+	void add_vertex(vec3&, vec3&);	 // vert//norm
+	void add_vertex(vec3&, vec2&);	 // vert/tex
+	void add_vertex(vec3&);		 // vert
 
 private:
-	std::vector<vec3> vectices, normals;
+	std::vector<vec3> vertices, normals;
 	std::vector<vec2> textures;
 };
 
@@ -54,7 +58,7 @@ public:
 	void load_texture(std::string&);
 
 private:
-	std::string mtl_name, tex_name, mtllib_file;
+	std::string mtl_name, texture_name, mtllib_file;
 	GLuint tex_num;
 	float alpha;
 	vector<face*> faces;
