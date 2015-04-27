@@ -19,4 +19,4 @@ clean:
 	rm main
 	rm geometry.o
 	rm bmp.o
-	VisPhys.o
+	rm VisPhys.o
