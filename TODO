@@ -48,3 +48,6 @@ incapsulation
 
 TODO:
 implement support for multiple mtllib files
+
+TODO:
+support \ continuation of line in .obj file

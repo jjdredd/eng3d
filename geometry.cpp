@@ -1,5 +1,6 @@
 #include "geometry.hpp"
 #include "bmp.hpp"
+
 face::face(){ return;}
 face::~face(){
     //free everythin'
@@ -79,6 +80,20 @@ body::~body(){
     //free everythin'
   for (unsigned i = 0; i < face_data.size(); i++) delete face_data[i];
   glDeleteTextures(1, &this->tex_num);
+}
+
+void add_face(std::string& s, std::vector<vec3>& v,
+	      std::vector<vec3>& n, std::vector<vec2>& t){
+
+	std::stringstream ss(s);
+	std::string sp;
+	face *f = new face;
+	int nv, nn, nt;
+	while(std::getline(ss, sp, ' ')){
+
+		f->add_vertex();
+	}
+	faces.push_back(f);						 
 }
 
 void body::load_texture(std::string& dir){
