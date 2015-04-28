@@ -3,6 +3,9 @@ TODO:
 personal appropriate function (class) & file!!!
 body must beinherited by "creature?" class which has function "morph" 
 to manipulate vertex data 
+
+make renderer class
+
 TODO: 
 !!make the code length-of-line independent!!!
 using std::string? instead of char[] buff
@@ -34,20 +37,21 @@ TODO:
 shadows and physics
 TODO:
 use glVertexPointer, glBindBuffer, glTexCoordPointer, glNormalPointer,
-glMultiDrawArrays
+glMultiDrawArrays - done
 for that recompile .obj to a better format (and write to .objc?)
+consider using VBO
 
 TODO:
-DO SOMETHING WITH CODE STYLE AND INDENTATION!!!!!!
+DO SOMETHING WITH CODE STYLE AND INDENTATION!!!!!! - almost done
 
 TODO:
 implement obj relative referencing
 
 TODO:
-incapsulation
+incapsulation - done?
 
 TODO:
-implement support for multiple mtllib files
+implement support for multiple mtllib files - done?
 
 TODO:
 support \ continuation of line in .obj file
