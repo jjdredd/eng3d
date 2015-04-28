@@ -22,7 +22,7 @@ VisPhys::VisPhys(std::string& file_name){
 	// parse .obj file first
 	obj_directory = file_name.substr(0, file_name.rfind('/') + 1);
 	if(!obj_file.is_open()){
-		cout << file_name << ": no such file" << endl;
+		std::cout << file_name << ": no such file" << std::endl;
 		return;
 	}
 	// read all the lines first
@@ -62,7 +62,7 @@ VisPhys::VisPhys(std::string& file_name){
 
 		case 'm':
 			if(s.compare(0, 7, "mtllib ")) break;
-			last_mtllib = s.substr(7);
+			last_mtllib = obj_directory + s.substr(7);
 			break;
 
 		case 'v':

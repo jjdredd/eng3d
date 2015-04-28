@@ -48,7 +48,7 @@ void face::add_vertex(vec3& v){
 body::body() :textures(false), normals(true), alpha(1.0){}
 
 body::body(std::string& m, std::string& f)
-	:mtl_name(m), mtllib_file(f), textures(true),
+	 :mtl_name(m), mtllib_file(f), textures(true),
 	 // assume there are normals and textures - we can change this later
 	 normals(true), alpha(1.0){
 
@@ -57,7 +57,8 @@ body::body(std::string& m, std::string& f)
 	std::ifstream fmtl(mtllib_file.c_str());
 
 	if(!fmtl.is_open()){
-		cout << mtllib_file << ": no such file" << endl;
+		std::cout << "no such file: " << mtllib_file << std::endl;
+		textures = false;
 		return;
 	}
 	// read all the lines first
@@ -106,6 +107,8 @@ void body::add_face(std::string& s, std::vector<vec3>& v,
 	int nv, nn, nt;
 	// could do w/o stringstream and getline
 	while(std::getline(ss, sp, ' ')){
+		// bug here!!! if textures == false and textures are provided
+		// within faces then normals aren't parsed!!!
 		if(textures && normals){
 			if(sscanf(sp.c_str(), "%i/%i/%i", &nv, &nt, &nn)
 			   == 3){
@@ -182,4 +185,5 @@ void body::draw(){
 	if(normals)
 		glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
+
 }
