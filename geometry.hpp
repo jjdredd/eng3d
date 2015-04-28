@@ -36,7 +36,7 @@ class face{
 public:
 	face();
 	~face();
-	void draw_face();
+	void draw(bool, bool);
 	void add_vertex(vec3&, vec3&, vec2&); // vert/tex/norm
 	void add_vertex(vec3&, vec3&);	 // vert//norm
 	void add_vertex(vec3&, vec2&);	 // vert/tex
@@ -50,16 +50,18 @@ private:
 class body{
 
 public:
-	bool textures, normals;
+	body();
 	body(std::string&, std::string&);
 	~body();
 	void add_face(std::string&, std::vector<vec3>&,
 		      std::vector<vec3>&, std::vector<vec2>&x);
 	void load_texture(std::string&);
+	void draw();
 
 private:
 	std::string mtl_name, texture_name, mtllib_file;
 	GLuint tex_num;
+	bool textures, normals;
 	float alpha;
 	vector<face*> faces;
 };

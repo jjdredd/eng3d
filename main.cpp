@@ -132,9 +132,12 @@ int main(int argc, char *argv[]){
     return -1;
   }
 
-  VisPhys *vp = new VisPhys(argv[1]);
-  vp->PrintStats();
-  RenderList.push_back(vp);
+  for(int i = 1; i < argc; i++){
+	  std::string s(argv[i]);
+	  VisPhys *vp = new VisPhys(s);
+	  // vp->PrintStats();
+	  RenderList.push_back(vp);
+  }
   
   glutInit(&argc, argv);  
   glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH);   

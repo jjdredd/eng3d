@@ -1,9 +1,21 @@
 #include "geometry.hpp"
 #include "bmp.hpp"
 
+
+////////////////
+// CLASS FACE //
+////////////////
+
 face::face(){ return;}
 face::~face(){
 	//free everythin'
+}
+
+void face::draw(bool t,bool n){
+	glVertexPointer(3, GL_FLOAT, 0, &vertices[0]);
+	if(t) glTexCoordPointer(2, GL_FLOAT, 0, &textures[0]);
+	if(n) glNormalPointer(GL_FLOAT, 0, &normals[0]);
+	glDrawArrays(GL_POLYGON, 0, vertices.size());
 }
 
 void face::add_vertex(vec3& v, vec3& n, vec2& t){
@@ -33,14 +45,16 @@ void face::add_vertex(vec3& v){
 ////////////////
 
 
+body::body() :textures(false), normals(true), alpha(1.0){}
+
 body::body(std::string& m, std::string& f)
 	:mtl_name(m), mtllib_file(f), textures(true),
 	 // assume there are normals and textures - we can change this later
 	 normals(true), alpha(1.0){
 
-	std::vector<std::string> lines;
+	std::string s;
+	std::size_t cpos;
 	std::ifstream fmtl(mtllib_file.c_str());
-	unsigned l;
 
 	if(!fmtl.is_open()){
 		cout << mtllib_file << ": no such file" << endl;
@@ -48,27 +62,25 @@ body::body(std::string& m, std::string& f)
 	}
 	// read all the lines first
 	while(fmtl.good()){
-		std::string s;
 		std::getline(fmtl, s);
-		s.erase(s.find('#'), s.length()); // get rid of comments
-		lines.push_back(s);
-	}
-
-	for(l = 0; l < lines.size(); l++){
 		// skip unnecessary info before our material
-		if(!lines[l].compare(0, 7, "newmtl ")
-		   && lines[l].substr(7, lines[l].length()) == mtl_name)
+		if(!s.compare(0, 7, "newmtl ")
+		   && s.substr(7, s.length()) == mtl_name)
 			break;
 	}
-	for(++l; l < lines.size(); l++){
+	while(fmtl.good()){
+		std::getline(fmtl, s);
+		cpos = s.find('#');
+		if(cpos != std::string::npos)
+			s.erase(cpos); // get rid of comments
 
-		if(lines[l].empty()) continue;
+		if(s.empty()) continue;
 
-		switch(lines[l][0]){
+		switch(s[0]){
 
 		case 'm':
-			if(lines[l].compare(0, 7, "map_Kd ")) break;
-			texture_name = lines[l].substr(7, lines[l].length());
+			if(s.compare(0, 7, "map_Kd ")) break;
+			texture_name = s.substr(7);
 			break;
 
 		case 'd':
@@ -78,6 +90,7 @@ body::body(std::string& m, std::string& f)
 		default: break;
 		}
 	}
+	if(texture_name.empty()) textures = false;
 }
 
 body::~body(){
@@ -91,6 +104,7 @@ void body::add_face(std::string& s, std::vector<vec3>& v,
 	std::string sp;
 	face *f = new face;
 	int nv, nn, nt;
+	// could do w/o stringstream and getline
 	while(std::getline(ss, sp, ' ')){
 		if(textures && normals){
 			if(sscanf(sp.c_str(), "%i/%i/%i", &nv, &nt, &nn)
@@ -118,6 +132,8 @@ void body::add_face(std::string& s, std::vector<vec3>& v,
 			normals = false;
 			f->add_vertex(v[nv]);
 		}
+		// none of the above, probably 'f' or '\'
+		// treat nexline '\' here
 	}
 	faces.push_back(f);
 }
@@ -132,7 +148,7 @@ void body::load_texture(std::string& dir){
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,
 			GL_LINEAR_MIPMAP_LINEAR);
 	/*glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);*/    
-	tex_path = dir + this->tex_name;
+	tex_path = dir + this->texture_name;
 	cout << "loading texture: " << tex_path << endl;
 	bmp_loader bmp(tex_path);
 
@@ -141,9 +157,29 @@ void body::load_texture(std::string& dir){
 				  GL_BGR, GL_UNSIGNED_BYTE, bmp.image);
 
 	} else {
-		cout << "failed to load " << this->tex_name << '\n';
+		cout << "failed to load " << this->texture_name << '\n';
 		textures = false;
 	}
 
 	return;
+}
+
+void body::draw(){
+
+	glEnableClientState(GL_VERTEX_ARRAY);
+	if(normals)
+		glEnableClientState(GL_NORMAL_ARRAY);
+	if(textures){
+		glBindTexture(GL_TEXTURE_2D, tex_num);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	}
+
+	for(unsigned i = 0; i < faces.size(); i++)
+		faces[i]->draw(textures, normals);
+
+	if(textures)
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	if(normals)
+		glDisableClientState(GL_NORMAL_ARRAY);
+	glDisableClientState(GL_NORMAL_ARRAY);
 }

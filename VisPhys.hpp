@@ -11,10 +11,10 @@
 class VisPhys{
 
 public:
-	// VisPhys(std::string &);
 	VisPhys(std::string&);
 	~VisPhys();
 	void LoadTextures(void);
+	void draw();
 
 private:
 	std::string obj_directory;
