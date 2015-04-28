@@ -31,12 +31,15 @@ VisPhys::VisPhys(std::string& file_name){
 		body *b;
 		std::string Nmtl;
 		std::string s;
-		std::size_t cpos;
+		std::size_t cpos, rpos;
 
 		std::getline(obj_file, s);
 		cpos = s.find('#');
+		rpos = s.find('\r');
 		if(cpos != std::string::npos)
 			s.erase(cpos); // get rid of comments
+		else if(rpos != std::string::npos)
+			s.erase(rpos);
 
 		// avoid empty or comment-only lines
 		if(s.empty()) continue;

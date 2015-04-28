@@ -53,7 +53,7 @@ body::body(std::string& m, std::string& f)
 	 normals(true), alpha(1.0){
 
 	std::string s;
-	std::size_t cpos;
+	std::size_t cpos, rpos;
 	std::ifstream fmtl(mtllib_file.c_str());
 
 	if(!fmtl.is_open()){
@@ -62,8 +62,17 @@ body::body(std::string& m, std::string& f)
 		return;
 	}
 	// read all the lines first
+
+	// BUGGY! REWRITE TO DETECT OUT MTL AND DON'T PARSE THOSE MTLS THAT
+	// HAPPEN AFTER!
 	while(fmtl.good()){
 		std::getline(fmtl, s);
+		cpos = s.find('#');
+		rpos = s.find('\r');
+		if(cpos != std::string::npos)
+			s.erase(cpos); // get rid of comments
+		else if(rpos != std::string::npos)
+			s.erase(rpos);
 		// skip unnecessary info before our material
 		if(!s.compare(0, 7, "newmtl ")
 		   && s.substr(7, s.length()) == mtl_name)
@@ -72,8 +81,11 @@ body::body(std::string& m, std::string& f)
 	while(fmtl.good()){
 		std::getline(fmtl, s);
 		cpos = s.find('#');
+		rpos = s.find('\r');
 		if(cpos != std::string::npos)
 			s.erase(cpos); // get rid of comments
+		else if(rpos != std::string::npos)
+			s.erase(rpos);
 
 		if(s.empty()) continue;
 
@@ -142,16 +154,16 @@ void body::add_face(std::string& s, std::vector<vec3>& v,
 }
 
 void body::load_texture(std::string& dir){
-	string tex_path;
+	std::string tex_path;
 	if (!textures) return;
-	glGenTextures(1, &this->tex_num);
-	glBindTexture(GL_TEXTURE_2D, this->tex_num);
+	glGenTextures(1, &tex_num);
+	glBindTexture(GL_TEXTURE_2D, tex_num);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,
 			GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,
 			GL_LINEAR_MIPMAP_LINEAR);
 	/*glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);*/    
-	tex_path = dir + this->texture_name;
+	tex_path = dir + texture_name;
 	cout << "loading texture: " << tex_path << endl;
 	bmp_loader bmp(tex_path);
 
@@ -160,7 +172,7 @@ void body::load_texture(std::string& dir){
 				  GL_BGR, GL_UNSIGNED_BYTE, bmp.image);
 
 	} else {
-		cout << "failed to load " << this->texture_name << '\n';
+		cout << "failed to load " << texture_name << '\n';
 		textures = false;
 	}
 
