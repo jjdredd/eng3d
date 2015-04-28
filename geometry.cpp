@@ -109,28 +109,28 @@ void body::add_face(std::string& s, std::vector<vec3>& v,
 		if(textures && normals){
 			if(sscanf(sp.c_str(), "%i/%i/%i", &nv, &nt, &nn)
 			   == 3){
-				f->add_vertex(v[nv], n[nn], t[nt]);
+				f->add_vertex(v[nv - 1], n[nn - 1], t[nt - 1]);
 				continue;
 			}
 		}
 		if(normals){
 			if(sscanf(sp.c_str(), "%i//%i", &nv, &nn) == 2){
 				textures = false;
-				f->add_vertex(v[nv], n[nn]);
+				f->add_vertex(v[nv - 1], n[nn - 1]);
 				continue;
 			}
 		}
 		if(textures){
 			if(sscanf(sp.c_str(), "%i/%i", &nv, &nt) == 2){
 				normals = false;
-				f->add_vertex(v[nv], t[nt]);
+				f->add_vertex(v[nv - 1], t[nt - 1]);
 				continue;
 			}
 		}
 		if(sscanf(sp.c_str(), "%i", &nv) == 1){
 			textures = false;
 			normals = false;
-			f->add_vertex(v[nv]);
+			f->add_vertex(v[nv - 1]);
 		}
 		// none of the above, probably 'f' or '\'
 		// treat nexline '\' here
