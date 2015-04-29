@@ -45,39 +45,24 @@ void face::add_vertex(vec3& v){
 ////////////////
 
 
-body::body() :textures(false), normals(true), alpha(1.0){}
+body::body() :textures(false), parse_tex(true), normals(true), alpha(1.0){}
 
 body::body(std::string& m, std::string& f)
-	 :mtl_name(m), mtllib_file(f), textures(true),
+	:mtl_name(m), mtllib_file(f), textures(true), parse_tex(true),
 	 // assume there are normals and textures - we can change this later
 	 normals(true), alpha(1.0){
 
 	std::string s;
 	std::size_t cpos, rpos;
 	std::ifstream fmtl(mtllib_file.c_str());
+	bool ourmtl = false;
 
 	if(!fmtl.is_open()){
 		std::cout << "no such file: " << mtllib_file << std::endl;
 		textures = false;
 		return;
 	}
-	// read all the lines first
 
-	// BUGGY! REWRITE TO DETECT OUT MTL AND DON'T PARSE THOSE MTLS THAT
-	// HAPPEN AFTER!
-	while(fmtl.good()){
-		std::getline(fmtl, s);
-		cpos = s.find('#');
-		rpos = s.find('\r');
-		if(cpos != std::string::npos)
-			s.erase(cpos); // get rid of comments
-		else if(rpos != std::string::npos)
-			s.erase(rpos);
-		// skip unnecessary info before our material
-		if(!s.compare(0, 7, "newmtl ")
-		   && s.substr(7, s.length()) == mtl_name)
-			break;
-	}
 	while(fmtl.good()){
 		std::getline(fmtl, s);
 		cpos = s.find('#');
@@ -91,8 +76,20 @@ body::body(std::string& m, std::string& f)
 
 		switch(s[0]){
 
+		case 'n':
+			if(s.compare(0, 7, "newmtl ")) break;
+			if(ourmtl){
+				ourmtl = !ourmtl;
+				break;
+			}
+			// is this newmtl describing our material?
+			// if yes - start parsing the rest of this section
+			if(s.substr(7, s.length()) == mtl_name)
+				ourmtl = true;
+			break;
+
 		case 'm':
-			if(s.compare(0, 7, "map_Kd ")) break;
+			if(!ourmtl || s.compare(0, 7, "map_Kd ")) break;
 			texture_name = s.substr(7);
 			break;
 
@@ -107,7 +104,7 @@ body::body(std::string& m, std::string& f)
 }
 
 body::~body(){
-	glDeleteTextures(1, &tex_num);
+	if(textures && parse_tex) glDeleteTextures(1, &tex_num);
 }
 
 void body::add_face(std::string& s, std::vector<vec3>& v,
@@ -119,9 +116,7 @@ void body::add_face(std::string& s, std::vector<vec3>& v,
 	int nv, nn, nt;
 	// could do w/o stringstream and getline
 	while(std::getline(ss, sp, ' ')){
-		// bug here!!! if textures == false and textures are provided
-		// within faces then normals aren't parsed!!!
-		if(textures && normals){
+		if(parse_tex && normals){
 			if(sscanf(sp.c_str(), "%i/%i/%i", &nv, &nt, &nn)
 			   == 3){
 				f->add_vertex(v[nv - 1], n[nn - 1], t[nt - 1]);
@@ -130,12 +125,12 @@ void body::add_face(std::string& s, std::vector<vec3>& v,
 		}
 		if(normals){
 			if(sscanf(sp.c_str(), "%i//%i", &nv, &nn) == 2){
-				textures = false;
+				parse_tex = false;
 				f->add_vertex(v[nv - 1], n[nn - 1]);
 				continue;
 			}
 		}
-		if(textures){
+		if(parse_tex){
 			if(sscanf(sp.c_str(), "%i/%i", &nv, &nt) == 2){
 				normals = false;
 				f->add_vertex(v[nv - 1], t[nt - 1]);
@@ -143,7 +138,7 @@ void body::add_face(std::string& s, std::vector<vec3>& v,
 			}
 		}
 		if(sscanf(sp.c_str(), "%i", &nv) == 1){
-			textures = false;
+			parse_tex = false;
 			normals = false;
 			f->add_vertex(v[nv - 1]);
 		}
@@ -155,7 +150,7 @@ void body::add_face(std::string& s, std::vector<vec3>& v,
 
 void body::load_texture(std::string& dir){
 	std::string tex_path;
-	if (!textures) return;
+	if (!textures || !parse_tex) return;
 	glGenTextures(1, &tex_num);
 	glBindTexture(GL_TEXTURE_2D, tex_num);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,

@@ -25,7 +25,7 @@ VisPhys::VisPhys(std::string& file_name){
 		std::cout << file_name << ": no such file" << std::endl;
 		return;
 	}
-	// read all the lines first
+
 	while(obj_file.good()){
 
 		body *b;

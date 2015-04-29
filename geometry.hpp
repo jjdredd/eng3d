@@ -61,7 +61,8 @@ public:
 private:
 	std::string mtl_name, texture_name, mtllib_file;
 	GLuint tex_num;
-	bool textures, normals;
+	// the initial value of parse_tex should always be true !
+	bool textures, normals, parse_tex;
 	float alpha;
 	vector<face*> faces;
 };
