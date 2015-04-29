@@ -17,7 +17,7 @@ VisPhys::VisPhys(std::string& file_name){
 	std::vector<vec2> t;
 	std::ifstream obj_file(file_name.c_str());
 	std::string last_mtllib;
-	std::string basename = file_name.substr(0, file_name.rfind('.'));
+	std::string basename = file_name.substr(0, file_name.rfind('.') + 1);
 
 	// parse .obj file first
 	obj_directory = file_name.substr(0, file_name.rfind('/') + 1);
