@@ -55,3 +55,6 @@ implement support for multiple mtllib files - done?
 
 TODO:
 support \ continuation of line in .obj file
+
+TODO:
+correctly treat redundant whitespaces and indentation in mtl (and obj?) ??
