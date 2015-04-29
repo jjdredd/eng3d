@@ -152,9 +152,9 @@ void body::add_face(std::string& s, std::vector<vec3>& v,
 	faces.push_back(f);
 }
 
-void body::load_texture(std::string& dir){
+GLuint body::load_texture(std::string& dir){
 	std::string tex_path;
-	if (!textures || !parse_tex) return;
+	if (!textures || !parse_tex) return tex_num;
 	glGenTextures(1, &tex_num);
 	glBindTexture(GL_TEXTURE_2D, tex_num);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,
@@ -175,7 +175,7 @@ void body::load_texture(std::string& dir){
 		textures = false;
 	}
 
-	return;
+	return tex_num;
 }
 
 void body::draw(){
@@ -208,4 +208,16 @@ unsigned body::NumVertices(){
 	for(unsigned i = 0; i < faces.size(); i++)
 		n += faces[i]->NumVertices();
 	return n;
+}
+
+std::string& body::GetTextureName(){
+	return texture_name;
+}
+
+GLuint body::GetTextureNumber(){
+	return tex_num;
+}
+
+void body::SetTextureNumber(GLuint tn){
+	tex_num = tn;
 }

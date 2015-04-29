@@ -56,10 +56,13 @@ public:
 	~body();
 	void add_face(std::string&, std::vector<vec3>&,
 		      std::vector<vec3>&, std::vector<vec2>&x);
-	void load_texture(std::string&);
+	GLuint load_texture(std::string&);
 	void draw();
 	unsigned NumFaces();
 	unsigned NumVertices();
+	std::string& GetTextureName();
+	GLuint GetTextureNumber();
+	void SetTextureNumber(GLuint);
 
 private:
 	std::string mtl_name, texture_name, mtllib_file;

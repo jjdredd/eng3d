@@ -84,11 +84,14 @@ VisPhys::~VisPhys(){}
 void VisPhys::LoadTextures(){
 
 	// error reporting and handling?
-
-	// TODO: duplicate textures
-
-	for(unsigned i = 0; i < bodies.size(); i++)
-		bodies[i]->load_texture(obj_directory);
+	std::map<std::string, GLuint> Mt;
+	for(unsigned i = 0; i < bodies.size(); i++){
+		std::string name = bodies[i]->GetTextureName();
+		if(Mt.find(name) == Mt.end())
+			Mt[name] = bodies[i]->load_texture(obj_directory);
+		else
+			bodies[i]->SetTextureNumber(Mt[name]);
+	}
 }
 
 void VisPhys::draw(){

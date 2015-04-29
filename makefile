@@ -1,4 +1,4 @@
-CXXOPTFLAGS = -O3 -march=native
+CXXOPTFLAGS = -O0 -march=native
 GLFLAGS = -lglut -lGLU -lGL
 CXXFLAGS = -W -Wextra -Wall --pedantic -g
 

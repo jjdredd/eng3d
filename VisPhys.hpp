@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <map>
 #include <cstdio>		// get rid of this and use stringstream?
 
 #include "geometry.hpp"
