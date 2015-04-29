@@ -15,6 +15,7 @@ public:
 	~VisPhys();
 	void LoadTextures(void);
 	void draw();
+	void PrintStats(std::ostream&);
 
 private:
 	std::string obj_directory;

@@ -96,3 +96,14 @@ void VisPhys::draw(){
 	for(unsigned i = 0; i < bodies.size(); i++)
 		bodies[i]->draw();
 }
+
+void VisPhys::PrintStats(std::ostream& s){
+
+	unsigned nfaces = 0, nvert = 0;
+	s << bodies.size() << "\t bodies,\n";
+	for(unsigned i = 0; i < bodies.size(); i++){
+		nfaces += bodies[i]->NumFaces();
+		nvert += bodies[i]->NumVertices();
+	}
+	s << nfaces << "\t faces,\n" << nvert << "\t vertices.\n";
+}

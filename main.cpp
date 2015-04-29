@@ -135,7 +135,7 @@ int main(int argc, char *argv[]){
 	for(int i = 1; i < argc; i++){
 		std::string s(argv[i]);
 		VisPhys *vp = new VisPhys(s);
-		// vp->PrintStats();
+		vp->PrintStats(std::cout);
 		RenderList.push_back(vp);
 	}
   

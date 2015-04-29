@@ -41,6 +41,7 @@ public:
 	void add_vertex(vec3&, vec3&);	 // vert//norm
 	void add_vertex(vec3&, vec2&);	 // vert/tex
 	void add_vertex(vec3&);		 // vert
+	unsigned NumVertices();
 
 private:
 	std::vector<vec3> vertices, normals;
@@ -57,6 +58,8 @@ public:
 		      std::vector<vec3>&, std::vector<vec2>&x);
 	void load_texture(std::string&);
 	void draw();
+	unsigned NumFaces();
+	unsigned NumVertices();
 
 private:
 	std::string mtl_name, texture_name, mtllib_file;

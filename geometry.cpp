@@ -7,6 +7,7 @@
 ////////////////
 
 face::face(){ return;}
+
 face::~face(){
 	//free everythin'
 }
@@ -34,11 +35,14 @@ void face::add_vertex(vec3& v, vec2& t){
 	textures.push_back(t);
 
 }
+
 void face::add_vertex(vec3& v){
 	vertices.push_back(v);
 }
 
-
+unsigned face::NumVertices(){
+	return vertices.size();
+}
 
 ////////////////
 // CLASS BODY //
@@ -193,4 +197,15 @@ void body::draw(){
 		glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
 
+}
+
+unsigned body::NumFaces(){
+	return faces.size();
+}
+
+unsigned body::NumVertices(){
+	unsigned n = 0;
+	for(unsigned i = 0; i < faces.size(); i++)
+		n += faces[i]->NumVertices();
+	return n;
 }
