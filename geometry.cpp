@@ -1,6 +1,63 @@
+#include <cmath>
+
 #include "geometry.hpp"
 #include "bmp.hpp"
 
+
+/////////////////
+// STRUCT VEC3 //
+/////////////////
+
+// vector product this x rhs
+vec3 vec3::operator*(vec3& rhs){
+	vec3 a;
+	a.x = y * rhs.z - z * rhs.y;
+	a.y = z * rhs.x - x * rhs.z;
+	a.z = x * rhs.y - y * rhs.x;
+	return a;
+}
+
+vec3 vec3::operator-(vec3& rhs){
+	vec3 a;
+	a.x = x - rhs.x;
+	a.y = y - rhs.y;
+	a.z = z - rhs.z;
+	return a;
+}
+
+vec3 vec3::operator+(vec3& rhs){
+	vec3 a;
+	a.x = x + rhs.x;
+	a.y = y + rhs.y;
+	a.z = z + rhs.z;
+	return a;
+}
+
+vec3 vec3::operator/(float f){
+	vec3 a;
+	a.x = x/f;
+	a.y = y/f;
+	a.z = z/f;
+	return a;
+}
+
+vec3& vec3::operator/=(float f){
+	x /= f;
+	y /= f;
+	z /= f;
+	return *this;
+}
+
+// scalar (dot) product
+inline float s_prod(vec3 *a, vec3 *b){
+	return a->x * b->x + a->y * b->y + a->z * b->z;
+}
+
+// normalize this vector
+void vec3::normalize(){
+	float n = sqrtf(x*x + y*y + z*z);
+	*this /= n;
+}
 
 ////////////////
 // CLASS FACE //
@@ -44,10 +101,39 @@ unsigned face::NumVertices(){
 	return vertices.size();
 }
 
+// (re)generate normals unconditionally!
+void face::GenNormals(){
+	vec3 n, a, b;
+	unsigned size = vertices.size();
+
+	if(size < 3) return;
+	normals.clear();
+	// first normal (just a way of wrapping vertex vector)
+	a = vertices[1] - vertices[0];
+	b = vertices[0] - vertices[size - 1];
+	n = b * a;
+	n.normalize();
+	normals.push_back(n);
+	// in the middle
+	for(unsigned i = 1; i < size - 1; i++){
+		a = vertices[i + 1] - vertices[i];
+		b = vertices[i] - vertices[i - 1];
+		n = b * a;
+		n.normalize();
+		normals.push_back(n);
+	}
+	// last normal
+	a = vertices[0] - vertices[size - 1];
+	b = vertices[size - 1] - vertices[size - 2];
+	n = b * a;
+	n.normalize();
+	normals.push_back(n);
+}
+
+
 ////////////////
 // CLASS BODY //
 ////////////////
-
 
 body::body() :textures(false), parse_tex(true), normals(true), alpha(1.0){}
 
@@ -220,4 +306,11 @@ GLuint body::GetTextureNumber(){
 
 void body::SetTextureNumber(GLuint tn){
 	tex_num = tn;
+}
+
+void body::GenNormals(bool check){
+	if(check && normals) return;
+	for(unsigned i = 0; i < faces.size(); i++)
+		faces[i]->GenNormals();
+	normals = true;
 }

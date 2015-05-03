@@ -110,3 +110,13 @@ void VisPhys::PrintStats(std::ostream& s){
 	}
 	s << nfaces << "\t faces,\n" << nvert << "\t vertices.\n";
 }
+
+void VisPhys::GenNormals(bool check){
+	for(unsigned i = 0; i < bodies.size(); i++)
+		bodies[i]->GenNormals(check);
+}
+
+void VisPhys::Prepare(){
+	LoadTextures();
+	GenNormals(true);
+}

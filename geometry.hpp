@@ -15,17 +15,19 @@
 // this is bad
 using namespace std;
 
-typedef struct {
-	float x; float y; float z;
-} vec3;
+struct vec3 {
+	float x, y, z;
+	vec3 operator*(vec3&);
+	vec3 operator-(vec3&);
+	vec3 operator+( vec3&);
+	vec3 operator/(float);
+	vec3& operator/=(float);
+	void normalize();
+};
 
 typedef struct {
 	float x; float y;
 } vec2;
-
-typedef struct {
-	vec3 vertice; vec2 texture;
-} univec;
 
 typedef struct{
 	int a; int b; int c;
@@ -42,6 +44,7 @@ public:
 	void add_vertex(vec3&, vec2&);	 // vert/tex
 	void add_vertex(vec3&);		 // vert
 	unsigned NumVertices();
+	void GenNormals();
 
 private:
 	std::vector<vec3> vertices, normals;
@@ -63,6 +66,7 @@ public:
 	std::string& GetTextureName();
 	GLuint GetTextureNumber();
 	void SetTextureNumber(GLuint);
+	void GenNormals(bool);
 
 private:
 	std::string mtl_name, texture_name, mtllib_file;

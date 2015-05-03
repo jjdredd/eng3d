@@ -17,6 +17,8 @@ public:
 	void LoadTextures(void);
 	void draw();
 	void PrintStats(std::ostream&);
+	void GenNormals(bool);
+	void Prepare();
 
 private:
 	std::string obj_directory;

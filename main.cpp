@@ -23,15 +23,31 @@ void keyPressed(unsigned char key, int x, int y)
 	case 'w':
 		fwd += 1.0;
 		break;
+	case 'W':
+		fwd += 10.0;
+		break;
+
 	case 's':
 		fwd -= 1.0;
 		break;
+	case 'S':
+		fwd -= 10.0;
+		break;
+
 	case 'a':
 		rt += 1.0;
 		break;
+	case 'A':
+		rt += 10.0;
+		break;
+
 	case 'd':
 		rt -= 1.0;
 		break;
+	case 'D':
+		rt -= 10.0;
+		break;
+
 	case 'o':
 		down -= 1.0;
 		break;
@@ -105,11 +121,11 @@ void DrawGLScene()
 	//glTranslatef(rt*cosf(phi/360)+fwd*sinf(phi/360),
 	//	       fwd*sinf(theta/360),
 	//	       fwd*cosf(theta/360)+rt*sinf(phi));
+	glRotatef(theta,1.0,0.0,0.0);
+	glRotatef(phi,0.0,1.0,0.0);
 	glTranslatef(0.0f,0.0f,fwd);
 	glTranslatef(rt,0.0f,0.0f);
 	glTranslatef(0.0f,down,0.0f);
-	glRotatef(theta,1.0,0.0,0.0);
-	glRotatef(phi,0.0,1.0,0.0);
   
 	for (bi = 0;bi < RenderList.size(); bi++){
 		RenderList[bi]->draw();
@@ -136,6 +152,7 @@ int main(int argc, char *argv[]){
 		std::string s(argv[i]);
 		VisPhys *vp = new VisPhys(s);
 		vp->PrintStats(std::cout);
+		vp->GenNormals(true);
 		RenderList.push_back(vp);
 	}
   
