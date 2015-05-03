@@ -58,3 +58,7 @@ support \ continuation of line in .obj file
 
 TODO:
 correctly treat redundant whitespaces and indentation in mtl (and obj?) ??
+
+TODO:
+detect adjacent faces throughout ALL bodies (using .obj data?)
+for shadows
